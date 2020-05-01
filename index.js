@@ -4,7 +4,76 @@ const {MongoClient} = require("mongodb");
 
 // host uri
 const uri = "mongodb://localhost:27017"
-connect();
+//connect();
+const name = "Aqua"
+const rating = 8;
+
+// create client instance
+const client = new MongoClient(uri);
+
+// populateDb(name, rating);
+checkIfExists("Aquaa");
+
+
+async function populateDb(name, rating) {
+    try {
+        await client.connect();
+        const db = client.db("mydb");
+        console.log(`Connnected to datasbase ${db.databaseName}`);
+
+        // get collection
+        const mycollection = db.collection("mycollection");
+        
+        // insert entry into collection
+        const insertCursor = await mycollection.insertOne({
+            "name": name,
+            "rating": rating,
+        });
+        console.log(`Successfully inserted ${insertCursor.insertedCount} entries`);
+    }
+    catch (ex) {
+        console.log(`Connection failed! Error: ${ex}`);
+    }
+    finally {
+        console.log("Closing TCP connection");
+        client.close();
+    }
+}
+
+async function checkIfExists(name) {
+    try {
+        await client.connect();
+        const db = client.db("mydb");
+        console.log(`Connected to database ${db.databaseName}`);
+
+        // get collection
+        const mycollection = db.collection("mycollection");
+        
+        // search db
+        await mycollection.findOne({"name": name}, function (err, result) {
+            // if (err || result === undefined || result.length == 0) {
+            //     console.log(`Search returned empty!`);
+            //     throw err;
+            // } else {
+            //     // console.log(result[0].name);
+            //     console.log(result);
+            // }
+            if (err || result == null) {
+                console.log('no results');
+                return;
+            }
+            console.log(result);
+        });
+    }
+    catch(ex) {
+        console.log(`Connection failed! Error: ${ex}`);
+    }
+    finally {
+        console.log("Closing TCP connection");
+        client.close();
+    }
+}
+
 
 // function to try and connect to databse
 async function connect() {
